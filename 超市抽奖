@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>超市抽奖</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .title i {
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .lottery-box {
+            background: linear-gradient(145deg, #f0f0f0, #ffffff);
+            border-radius: 16px;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+            box-shadow: 
+                inset 5px 5px 10px rgba(0, 0, 0, 0.1),
+                inset -5px -5px 10px rgba(255, 255, 255, 0.8),
+                0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lottery-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                transparent 40%,
+                rgba(102, 126, 234, 0.1) 50%,
+                transparent 60%,
+                transparent
+            );
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%);
+            }
+        }
+
+        .result {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .result.rolling {
+            animation: pulse 0.1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .result.winner {
+            animation: winner 0.6s ease-out;
+            color: #e74c3c;
+            font-size: 28px;
+        }
+
+        @keyframes winner {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 50px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .info {
+            margin-top: 25px;
+            font-size: 14px;
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+
+        .info i {
+            color: #667eea;
+            margin-right: 5px;
+        }
+
+        .supermarket-list {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .supermarket-list h4 {
+            font-size: 14px;
+            color: #667eea;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .supermarket-list ul {
+            list-style: none;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .supermarket-list ul li {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .supermarket-list ul li i {
+            color: #764ba2;
+            font-size: 10px;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            animation: confetti-fall 3s linear forwards;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+
+            .result {
+                font-size: 20px;
+            }
+
+            .result.winner {
+                font-size: 24px;
+            }
+
+            .btn {
+                padding: 14px 40px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">
+            <i class="fas fa-gift"></i>
+            超市抽奖
+        </h1>
+
+        <div class="lottery-box">
+            <div class="result" id="result">点击开始抽奖</div>
+        </div>
+
+        <button class="btn" id="startBtn" onclick="startLottery()">
+            <i class="fas fa-play"></i> 开始抽取
+        </button>
+
+        <div class="info">
+            <i class="fas fa-info-circle"></i>
+            点击按钮开始抽奖，系统将从以下超市中随机选择一个
+        </div>
+
+        <div class="supermarket-list">
+            <h4><i class="fas fa-list"></i> 参与抽奖的超市</h4>
+            <ul>
+                <li><i class="fas fa-star"></i> 查桥商业广场（5分钟）</li>
+                <li><i class="fas fa-star"></i> 荟聚购物中心（6分钟）</li>
+                <li><i class="fas fa-star"></i> 麦德龙会员店（10分钟）</li>
+                <li><i class="fas fa-star"></i> 映月天地商业广场（14分钟）</li>
+                <li><i class="fas fa-star"></i> 超盒算NB（17分钟）</li>
+                <li><i class="fas fa-star"></i> 山姆会员商店（21分钟）</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <i class="fas fa-heart"></i> 祝您好运！
+        </div>
+    </div>
+
+    <script>
+        const supermarkets = [
+            '查桥商业广场',
+            '荟聚购物中心',
+            '麦德龙会员店',
+            '映月天地商业广场',
+            '超盒算NB',
+            '山姆会员商店'
+        ];
+
+        let isRunning = false;
+        let currentIndex = 0;
+        let intervalId = null;
+        let speed = 100;
+        let slowDownInterval = null;
+
+        function startLottery() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            const resultElement = document.getElementById('result');
+            const startBtn = document.getElementById('startBtn');
+            
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 抽奖中...';
+            resultElement.classList.remove('winner');
+            resultElement.classList.add('rolling');
+            
+            speed = 100;
+            
+            intervalId = setInterval(() => {
+                currentIndex = (currentIndex + 1) % supermarkets.length;
+                resultElement.textContent = supermarkets[currentIndex];
+            }, speed);
+            
+            setTimeout(() => {
+                slowDown();
+            }, 2000);
+        }
+
+        function slowDown() {
+            clearInterval(intervalId);
+            
+            slowDownInterval = setInterval(() => {
+                currentIndex = (currentIndex + 1) % supermarkets.length;
+                const resultElement = document.getElementById('result');
+                resultElement.textContent = supermarkets[currentIndex];
+                
+                speed += 50;
+                
+                if (speed >= 500) {
+                    clearInterval(slowDownInterval);
+                    showResult();
+                }
+            }, speed);
+        }
+
+        function showResult() {
+            isRunning = false;
+            const resultElement = document.getElementById('result');
+            const startBtn = document.getElementById('startBtn');
+            
+            resultElement.classList.remove('rolling');
+            resultElement.classList.add('winner');
+            
+            createConfetti();
+            
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-redo"></i> 再抽一次';
+        }
+
+        function createConfetti() {
+            const colors = ['#667eea', '#764ba2', '#e74c3c', '#f39c12', '#27ae60', '#3498db'];
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    confetti.style.width = (Math.random() * 10 + 5) + 'px';
+                    confetti.style.height = (Math.random() * 10 + 5) + 'px';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 30);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('超市抽奖页面已加载');
+        });
+    </script>
+</body>
+</html>
